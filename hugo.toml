@@ -29,27 +29,9 @@ ShowPageNums = true
 ShowToc = true
 images = ["images/papermod-cover.png"]
 
-
-# [params.homeInfoParams]
-# # Title = "Jorge Romeu Huodbro"
-# Content = "Hello World"
-
-[[params.socialIcons]]
-name = "github"
-url = "<link>"
-
-[[params.socialIcons]]
-name = "linkedin"
-url = "<link>"
-
-[[params.socialIcons]]
-name = "instagram"
-url = "<link>"
-
-[params.editPost]
-URL = "https://github.com/adityatelange/hugo-PaperMod/tree/exampleSite/content"
-Text = "Suggest Changes"
-appendFilePath = true
+[caches]
+  [caches.images]
+    dir = ':cacheDir/images'
 
 [minify]
 disableXML = true
@@ -77,11 +59,11 @@ unsafe = true
 
 [markup.highlight]
 noClasses = false
-# anchorLineNos = true
-# codeFences = true
-# guessSyntax = true
+anchorLineNos = true
+codeFences = true
+guessSyntax = true
 # lineNos = true
-# style = "monokai"
+style = "monokai"
 
 [services.instagram]
 disableInlineCSS = true
