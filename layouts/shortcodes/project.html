@@ -1,0 +1,32 @@
+<div class="project-box {{ if eq (.Get "highlight") "true" }}project-highlight{{ end }}">
+  {{ with .Get "img" }}
+    <img src="{{ . }}" alt="Project banner" class="project-img">
+  {{ end }}
+
+  <div class="project-info">
+    <div class="project-header">
+      <h2 class="project-title">{{ .Get "title" }}</h2>
+      {{ with .Get "tag" }}
+        <span class="project-tag">{{ . }}</span>
+      {{ end }}
+    </div>
+
+    {{ with .Get "authors" }}
+      <p class="project-authors"><em>{{ . | safeHTML }}</em></p>
+    {{ end }}
+
+    {{ with .Get "venue" }}
+      <p class="project-venue"><em>{{ . }}</em></p>
+    {{ end }}
+
+    {{ with .Get "desc" }}
+      <p class="project-desc">{{ . | markdownify }}</p>
+    {{ end }}
+
+    <div class="project-links">
+      {{ with .Get "paper" }}<a href="{{ . }}" target="_blank">📄 Paper</a>{{ end }}
+      {{ with .Get "code" }}<a href="{{ . }}" target="_blank">💻 Code</a>{{ end }}
+      {{ with .Get "blog" }}<a href="{{ . }}" target="_blank">✏️ Blog Post</a>{{ end }}
+    </div>
+  </div>
+</div>

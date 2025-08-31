@@ -1,8 +1,7 @@
-baseURL = 'https://example.org/'
+baseURL = 'https://jorgeromeu.github.io/'
 languageCode = 'en-us'
 title = 'Jorge Romeu Huidobro'
-theme = ["PaperMod"]
-
+theme = ["xmin"]
 enableInlineShortcodes = true
 enableRobotsTXT = true
 buildDrafts = false
@@ -29,6 +28,10 @@ ShowPageNums = true
 ShowToc = true
 images = ["images/papermod-cover.png"]
 
+[params.assets]
+  css = ["css/extended/custom.scss"]
+
+
 [caches]
   [caches.images]
     dir = ':cacheDir/images'
@@ -40,18 +43,26 @@ disableXML = true
 disableAliases = false
 pagerSize = 5
 
-[languages]
+# [languages]
 
-[languages.en]
-languageName = "English"
-weight = 1
-[[languages.en.menu.main]]
-name = "Projects"
-url = "projects"
-weight = 5
+# [languages.en]
+# languageName = "English"
+# weight = 1
+
+# [[languages.en.menu.main]]
+# name = "Projects"
+# url = "projects"
+# weight = 5
+
+# [[languages.en.menu.main]]
+# name = "Home"
+# url = ""
+# weight = 5
 
 [outputs]
 home = ["HTML", "RSS", "JSON"]
+section = ["HTML"]
+page = ["HTML"]
 
 [markup]
 [markup.goldmark.renderer]

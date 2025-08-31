@@ -1,0 +1,98 @@
+.project-box {
+  display: flex;
+  align-items: center;
+  gap: 1.25rem;
+  border: 1px solid #ddd;
+  border-radius: 0.75rem;
+  padding: 1rem;
+  margin: 1rem 0;
+  background: #fff;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.05);
+}
+
+.project-img {
+  width: 150px;
+  height: auto;
+  border-radius: 0.5rem;
+  flex-shrink: 0; /* prevents image from shrinking */
+}
+
+.project-info {
+  flex: 1;
+}
+
+
+.project-title {
+  margin: 0;                 /* remove extra space */
+  font-size: 1.25rem;
+}
+
+.project-authors {
+  margin: 0.2rem 0;           /* just a little breathing room */
+  font-size: 0.95rem;
+  color: #666;
+}
+
+.project-desc {
+  margin: 0.3rem 0 0;         /* small gap above description */
+  color: #444;
+  line-height: 1.4;
+}
+
+.project-authors .me {
+  font-weight: bold;
+  color: #000;   /* optional: make it stand out more */
+}
+
+
+.project-venue {
+  margin: 0.2rem 0;
+  font-size: 0.9rem;
+  color: #555;
+  font-style: italic;
+}
+
+.project-links {
+  margin-top: 0.6rem;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.6rem;
+}
+
+.project-links a {
+  padding: 0.35rem 0.75rem;
+  border-radius: 0.5rem;
+  background: #f5f5f5;
+  text-decoration: none;
+  font-size: 0.9rem;
+  transition: background 0.2s;
+  color: #333;
+}
+
+.project-links a:hover {
+  background: #e0e0e0;
+}
+
+.project-header {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 0.75rem;
+}
+
+.project-tag {
+  background: #4f46e5;        /* Indigo (change as you like) */
+  color: #fff;                /* White text */
+  font-size: 0.8rem;
+  font-weight: 700;
+  padding: 0.25rem 0.6rem;
+  border-radius: 999px;       /* pill shape */
+  white-space: nowrap;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.2);
+  letter-spacing: 0.3px;
+}
+
+.project-highlight {
+  background: #fffbea;   /* pale yellow */
+  border-color: #fcd34d; /* soft amber border */
+}
