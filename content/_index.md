@@ -1,11 +1,13 @@
-<!-- asdf -->
+---
+title: Home
+---
 
 {{< aboutme >}}
 I am a Research Engineer at [ALLSIDES](https://www.allsides.tech/) working on physically based inverse rendering for 3D scanning at scale
 
-I completed a M.Sc in computer science at TU Delft where I wrote my thesis on geometry-guided video generation, under the supervision of [Prof. Petr Kellnhofer](https://kellnhofer.xyz/). Before this, I obtained a B.Sc in computer science at TU Delft, my thesis was writen under the supervision of [Prof. Elmar Eisemann](https://graphics.tudelft.nl/) and was on importance sampling of area lights for physically based rendering.
+I completed a M.Sc in computer science at TU Delft where I wrote my thesis on geometry-guided video generation, under the supervision of [Petr Kellnhofer](https://kellnhofer.xyz/). Before this, I obtained a B.Sc in computer science at TU Delft, my thesis was writen under the supervision of [Elmar Eisemann](https://graphics.tudelft.nl/) and was on importance sampling for physically based rendering.
 
-In my free time I enjoy spending time outdoors hiking, skiing, swimming, scuba diving, and learning something new.
+In my free time I enjoy spending time outdoors, hiking, skiing, swimming, scuba diving, and learning something new.
 {{< /aboutme >}}
 
 # Projects
@@ -18,7 +20,7 @@ Overview of some of the projects I worked on during my studies
     authors="<span class='me'>Jorge Romeu Huidobro</span>, <a href='https://kellnhofer.xyz'>Petr Kellnhofer</a>, <a href='https://lukas.uzolas.com/'>Lukas Uzolas</a>, <a href='https://graphics.tudelft.nl/~marroquim/'>Ricardo Marroquim</a>, <a href='https://graphics.tudelft.nl/~eisemann/'>Elmar Eisemann</a>"
     venue=""
     tag="Master Thesis"
-    desc="We propose a method for generating videos conditioned on an animated 3D mesh with an image diffusion model. Our approach works in two stages, firstly we generate a texture for the input mesh using [existing techniques for multi-view consistent generation](https://arxiv.org/abs/2408.01291), and extract intermediate features the network while generating these textured views. We then render depth-maps of the target animation and use the diffusion model with depth conditioning to generate each animation frame, and enforce consistency between frames using these extracted diffusion features. By using this two-stage pipeline we get stronger robustness to occlusion and camera zoom than [prior work](https://primecai.github.io/generative_rendering/)"
+    desc="We propose a method for generating videos conditioned on an animated 3D mesh with an image diffusion model. Our approach works in two stages, firstly we generate a texture for the input mesh using [existing techniques for multi-view consistent generation](https://arxiv.org/abs/2408.01291), and extract intermediate features from the network while generating these views. We then render depth-maps of the target animation which we use as conditioning to generate the video frames, enforcing consistency between frames using these extracted diffusion features. By using this two-stage pipeline we get stronger robustness to occlusion and camera zoom than [prior work](https://primecai.github.io/generative_rendering/)"
     code="https://github.com/Jorgeromeu/diffusion-feature-textures"
     paper="https://repository.tudelft.nl/record/uuid:2f42fdf6-d988-4096-957a-ab8d1d3bf5f2"
     highlight="true"
@@ -84,7 +86,7 @@ Overview of some of the projects I worked on during my studies
 >}} 
 
 {{< project 
-    img="images/projects/testknight.svg" 
+    img="https://raw.githubusercontent.com/SERG-Delft/testknight/master/screenshots/duplicate-test.gif" 
     tag=""
     title="TestKnight: An Interactive Assistant for Test Engineering"
     authors="Cristian-Alexandru Botocan*, Piyush Deshmukh*, <a href='https://pavlosmak.github.io/'>Pavlos Makridis</a>*, <span class='me'>Jorge Romeu Huidobro</span>*, Mathanrajan Sundarrajan*, Mauricio Aniche, Andy Zaidman (* Joint First Authorship)"
