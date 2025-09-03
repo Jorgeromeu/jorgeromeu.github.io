@@ -12,25 +12,13 @@ pygmentsUseClasses = true
 mainsections = ["posts", "papermod"]
 
 [params]
-env = "production"                                                              # enables google analytics, opengraph, twitter-cards, schema
-description = "Theme PaperMod - https://github.com/adityatelange/hugo-PaperMod"
-author = "Theme PaperMod"
+env = "production"
+author = "Jorge Romeu Huidobro"
 defaultTheme = "auto"
-ShowShareButtons = true
-ShowReadingTime = true
-displayFullLangName = true
-ShowPostNavLinks = true
-ShowBreadCrumbs = true
-ShowCodeCopyButtons = true
-ShowRssButtonInSectionTermList = true
-ShowAllPagesInArchive = true
-ShowPageNums = true
-ShowToc = true
 images = ["images/papermod-cover.png"]
 
 [params.assets]
   css = ["css/extended/custom.scss"]
-
 
 [caches]
   [caches.images]
@@ -42,22 +30,6 @@ disableXML = true
 [pagination]
 disableAliases = false
 pagerSize = 5
-
-# [languages]
-
-# [languages.en]
-# languageName = "English"
-# weight = 1
-
-# [[languages.en.menu.main]]
-# name = "Projects"
-# url = "projects"
-# weight = 5
-
-# [[languages.en.menu.main]]
-# name = "Home"
-# url = ""
-# weight = 5
 
 [outputs]
 home = ["HTML", "RSS", "JSON"]
@@ -73,7 +45,6 @@ noClasses = false
 anchorLineNos = true
 codeFences = true
 guessSyntax = true
-# lineNos = true
 style = "monokai"
 
 [services.instagram]

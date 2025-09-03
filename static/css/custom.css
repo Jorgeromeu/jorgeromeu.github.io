@@ -5,12 +5,19 @@
   border: 1px solid #ddd;
   border-radius: 0.75rem;
   padding: 1rem;
-  margin: 1rem 0;
+  margin: 0.8rem 0;
   background: #fff;
   box-shadow: 0 2px 6px rgba(0,0,0,0.05);
 }
 
 .project-img {
+  width: 150px;
+  height: auto;
+  border-radius: 0.5rem;
+  flex-shrink: 0; /* prevents image from shrinking */
+}
+
+.project-media {
   width: 150px;
   height: auto;
   border-radius: 0.5rem;
@@ -43,7 +50,6 @@
   font-weight: bold;
   color: #000;   /* optional: make it stand out more */
 }
-
 
 .project-venue {
   margin: 0.2rem 0;
@@ -99,3 +105,29 @@
 
 
 /* New */
+
+.experience-img {
+  width: 70px;
+  height: auto;
+  border-radius: 0.5rem;
+  flex-shrink: 0; /* prevents image from shrinking */
+}
+
+.experience-date {
+  margin: 0.0rem -0;           
+  font-size: 0.95rem;
+  color: #666;
+}
+
+.experience-desc {
+  font-size: 0.95rem;
+  margin: 0.0rem 0 0;         /* small gap above description */
+  color: #444;
+  /* line-height: 1.4; */
+}
+
+.experience-line {
+  display: flex;
+  flex-direction: row;
+  gap: 1em;
+}

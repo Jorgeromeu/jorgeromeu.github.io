@@ -1,32 +1,35 @@
 <div class="project-box {{ if eq (.Get "highlight") "true" }}project-highlight{{ end }}">
-  {{ with .Get "img" }}
-    <img src="{{ . }}" alt="Project banner" class="project-img">
+  {{- $media   := .Get "media" -}}
+  {{- $poster  := .Get "poster" -}}  {{/* optional: image shown before/while loading */}}
+  {{- $title   := .Get "title" -}}
+  {{- $ext     := "" -}}
+  {{- if $media -}}{{ $ext = lower (trim (path.Ext $media) ".") }}{{ end -}}
+
+  {{/* MEDIA: auto image/video */}}
+  {{ if and $media (in (slice "mp4" "webm" "ogg" "mov") $ext) }}
+    <video class="project-media" autoplay loop muted playsinline preload="metadata"
+           {{ with $poster }}poster="{{ . }}"{{ end }} aria-label="{{ $title }}">
+      <source src="{{ $media }}" type="video/{{ $ext }}">
+      {{ with $poster }}<img src="{{ . }}" alt="{{ $title }} poster">{{ end }}
+    </video>
+  {{ else if $media }}
+    <img src="{{ $media }}" alt="Project banner" class="project-media">
   {{ end }}
 
   <div class="project-info">
     <div class="project-header">
       <h2 class="project-title">{{ .Get "title" }}</h2>
-      {{ with .Get "tag" }}
-        <span class="project-tag">{{ . }}</span>
-      {{ end }}
+      {{ with .Get "tag" }}<span class="project-tag">{{ . }}</span>{{ end }}
     </div>
 
-    {{ with .Get "authors" }}
-      <p class="project-authors"><em>{{ . | safeHTML }}</em></p>
-    {{ end }}
-
-    {{ with .Get "venue" }}
-      <p class="project-venue"><em>{{ . }}</em></p>
-    {{ end }}
-
-    {{ with .Get "desc" }}
-      <p class="project-desc">{{ . | markdownify }}</p>
-    {{ end }}
+    {{ with .Get "authors" }}<p class="project-authors"><em>{{ . | safeHTML }}</em></p>{{ end }}
+    {{ with .Get "venue" }}<p class="project-venue"><em>{{ . }}</em></p>{{ end }}
+    {{ with .Get "desc" }}<p class="project-desc">{{ . | markdownify }}</p>{{ end }}
 
     <div class="project-links">
       {{ with .Get "paper" }}<a href="{{ . }}" target="_blank">📄 Paper</a>{{ end }}
-      {{ with .Get "code" }}<a href="{{ . }}" target="_blank">💻 Code</a>{{ end }}
-      {{ with .Get "blog" }}<a href="{{ . }}" target="_blank">✏️ Blog Post</a>{{ end }}
+      {{ with .Get "code"  }}<a href="{{ . }}" target="_blank">💻 Code</a>{{ end }}
+      {{ with .Get "blog"  }}<a href="{{ . }}" target="_blank">✏️ Blog Post</a>{{ end }}
     </div>
   </div>
 </div>

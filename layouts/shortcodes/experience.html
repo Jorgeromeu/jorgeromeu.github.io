@@ -1,0 +1,32 @@
+<div class="project-box">
+
+  {{ with .Get "img" }}
+    <img src="{{ . }}" alt="Project banner" class="experience-img">
+  {{ end }}
+
+  <div class="project-info">
+
+
+    <div class="project-header">
+      <h2 class="project-title">{{ .Get "title" }}</h2>
+      {{ with .Get "tag" }}
+        <span class="project-tag">{{ . }}</span>
+      {{ end }}
+    </div>
+
+    <div class="experience-line">
+
+      {{ with .Get "dates" }}
+        <p class="experience-date"><em>{{ . | safeHTML }}</em></p>
+      {{ end }}
+      
+      {{ with .Get "desc" }}
+        <p class="experience-desc">{{ . | markdownify }}</p>
+      {{ end }}
+
+    </div>
+
+
+
+  </div>
+</div>
