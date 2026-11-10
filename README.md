@@ -1,52 +1,67 @@
-# jorgeromeu.github.io
+# Jorge Romeu Huidobro
 
-Personal site. `build.mjs` turns the Markdown in `site/` into plain HTML pages in `dist/`
-(so search engines see the content), plus `sitemap.xml` and `robots.txt`.
+Source of my personal website: **[jorgerom.eu](https://jorgerom.eu)**
 
-## Editing
+I'm a Research Engineer at [ALLSIDES](https://www.allsides.tech/) working on 3D reconstruction and
+inverse rendering. See [jorgerom.eu](https://jorgerom.eu) for my background, projects and
+[CV](https://jorgerom.eu/cv.pdf).
 
-Everything you edit is in `site/`. The code (`build.mjs`, `layout.mjs`, `site/assets/`) can be ignored.
+---
+
+## How the site works
+
+Content is written in Markdown in `site/`. `build.mjs` turns it into static HTML in `dist/`,
+along with `sitemap.xml` and `robots.txt`. Pushing to `master` deploys it to GitHub Pages.
+
+    npm install     # once
+    npm run dev     # http://localhost:8000, rebuilds and reloads on every change
+    npm run build   # build once into dist/
+
+## Editing content
+
+Everything you edit is in `site/`:
 
     site/
-      home.md                  Home / about           -> /
-      projects.md              Projects list          -> /projects/
-      projects/<name>/         One folder per project:
-        index.md                 its page (optional)  -> /projects/<name>/
-      404.md                   Not-found page
-        *.mp4, *.jpg, *.png      its media
+      home.md                    About page            ->  /
+      projects.md                Projects list         ->  /projects/
+      projects/<name>/
+        index.md                 Project page (optional)  ->  /projects/<name>/
+        *.mp4, *.jpg, *.png      Its media
+      404.md                     Not-found page
       cv.pdf, me.jpg
-      assets/                  code, styles, logos (not content)
 
-Paths in a Markdown file are relative to that file, so `projects/nerf2d/index.md` writes
+Paths in a Markdown file are relative to that file: `projects/nerf2d/index.md` writes
 `![](teaser.png)`, and `projects.md` writes `![](projects/nerf2d/optim.mp4)`.
 
-In `projects.md`, each `### [Title](link)` block is a card:
+**Project cards.** In `projects.md`, each `###` block is one card, shown in file order:
 
-    ### [My Project](projects/my-project/index.md)   <- opens that page
-    ![](projects/my-project/thumb.mp4)              <- thumbnail (.mp4 loops, thumb.jpg is its poster)
-    `Course project` `2024`                         <- badges (a plain year shows as grey text)
+    ### [My Project](projects/my-project/index.md)   <- links to its page (or an https:// URL, or no link)
+    ![](projects/my-project/thumb.mp4)              <- thumbnail; .mp4 plays on hover, thumb.jpg is its poster
+    `M.Sc. Thesis` `2025`                           <- badges (a plain year shows as grey text)
 
-Link the title to an `https://` URL instead to send the card straight to an external page (shows ↗).
+    **Jorge Romeu Huidobro**, Co-author             <- authors
+    One or two sentences of description.
+    [Paper](…) · [Code](…)                          <- links row; icons come from the labels
 
-Anywhere: a line of only `badges` becomes badges, and `![](x.mp4)` becomes a looping video.
-Math: `$inline$` and `$$display$$` (LaTeX, rendered with MathJax; loaded only on pages that use it).
-`\$` is a literal dollar sign, and things like "$5 and $10" stay plain text.
+**Anywhere:**
+- `![](x.mp4)` becomes a looping video, with `x.jpg` as its poster.
+- A line made only of `` `code` `` spans becomes a row of badges.
+- `$inline$` and `$$display$$` math are rendered with MathJax. `\$` is a literal dollar sign.
 
-## View locally
+## SEO and analytics
 
-    npm install   # once
-    npm run dev
+Each page's title, description and preview image come from its `# Title`, first paragraph and
+first image. Site-wide settings are at the top of `build.mjs`: name, home-page description, the
+profile links used in the structured data, and the [GoatCounter](https://www.goatcounter.com)
+analytics code.
 
-Then open http://localhost:8000. The site rebuilds and the page reloads whenever a file in `site/` changes.
-`npm run build` builds once into `dist/`.
+## Code
 
-Page titles, descriptions and preview images come from each page's `# Title`, first paragraph and
-first image. Site-wide SEO settings (name, home description, profile links for search engines) are
-at the top of `build.mjs`.
+- `build.mjs`: Markdown to HTML, head tags, sitemap, dev server
+- `layout.mjs`: page layout applied at build time (profile card, project rows, icons)
+- `site/assets/`: styles, client-side JS (video hover, math, theme toggle, bunny), logos
 
-## Deploy
-
-Push to `master`. GitHub Actions runs the build and publishes `dist/` to GitHub Pages.
+## Media tips
 
 GIF to MP4 plus poster:
 
