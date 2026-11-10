@@ -17,6 +17,9 @@ const SITE = {
   name: "Jorge Romeu Huidobro",
   description: "Jorge Romeu Huidobro is a Research Engineer at ALLSIDES working on 3D reconstruction and inverse rendering.",
   image: "/me.jpg",
+  // Visitor stats (goatcounter.com): your site code, e.g. "jorgerom" for jorgerom.goatcounter.com.
+  // Leave empty to disable. Visits from localhost are not counted.
+  goatcounter: "jorgeromeu",
   // Structured data for the home page: helps search engines connect the name to this site and profiles.
   person: {
     jobTitle: "Research Engineer",
@@ -113,7 +116,7 @@ ${html}  </main>
   <script src="/assets/render.js"></script>
   <script src="/assets/light.js"></script>
   <script src="/assets/bunny2d.js"></script>
-</body>
+${SITE.goatcounter ? `  <script data-goatcounter="https://${SITE.goatcounter}.goatcounter.com/count" async src="//gc.zgo.at/count.js"></script>\n` : ""}</body>
 </html>
 `;
 }
