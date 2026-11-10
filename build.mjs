@@ -96,7 +96,8 @@ function render(page) {
   <title>${esc(title)}</title>
   <meta name="description" content="${esc(description)}">
   <meta name="author" content="${SITE.name}">
-${page.noindex ? '  <meta name="robots" content="noindex">' : `  <link rel="canonical" href="${canonical}">
+${page.noindex ? '  <meta name="robots" content="noindex">' : `  <meta name="robots" content="max-image-preview:large">
+  <link rel="canonical" href="${canonical}">
   <meta property="og:type" content="${page.home ? "profile" : "article"}">
   <meta property="og:site_name" content="${SITE.name}">
 ${page.home ? `  <meta property="profile:first_name" content="Jorge">
