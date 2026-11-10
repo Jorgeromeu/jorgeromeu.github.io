@@ -1,12 +1,6 @@
-# Jorge Romeu Huidobro
+# jorgerom.eu
 
-Source of my personal website: **[jorgerom.eu](https://jorgerom.eu)**
-
-I'm a Research Engineer at [ALLSIDES](https://www.allsides.tech/) working on 3D reconstruction and
-inverse rendering. See [jorgerom.eu](https://jorgerom.eu) for my background, projects and
-[CV](https://jorgerom.eu/cv.pdf).
-
----
+Source code for **[jorgerom.eu](https://jorgerom.eu)**.
 
 ## How the site works
 
