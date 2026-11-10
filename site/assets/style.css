@@ -1,4 +1,5 @@
 :root {
+  --page: 740px; /* width of the content column */
   --bg: #f8f7f4;
   --text: #1c1c1a;
   --muted: #5d5b56;
@@ -39,7 +40,7 @@ html { background: var(--bg); transition: background 0.3s; }
 
 .theme-toggle {
   display: inline-flex; align-items: center; justify-content: center;
-  width: 30px; height: 30px; margin: -5px -6px 0 0.25rem; padding: 0;
+  width: 30px; height: 30px; margin: 0 -6px 0 0.25rem; padding: 0;
   border: 0; border-radius: 50%; background: none; cursor: pointer;
   color: var(--muted);
 }
@@ -51,18 +52,30 @@ body {
   padding: 1.25rem 1.25rem 10rem; /* room at the bottom for the bunny */
   background: transparent;
   color: var(--text);
-  font: 16px/1.6 "Figtree", system-ui, sans-serif;
+  font: 16px/1.6 "Geist", system-ui, sans-serif;
 }
-main, nav { max-width: 720px; margin: 0 auto; }
+main, nav { max-width: var(--page); margin: 0 auto; }
 a { color: var(--link); text-decoration: none; }
 a:hover { text-decoration: underline; }
 img, video { max-width: 100%; }
 
-nav { display: flex; justify-content: flex-end; gap: 1.25rem; margin-bottom: 2.5rem; font-size: 0.95rem; }
+nav { display: flex; justify-content: flex-end; align-items: center; gap: 1.25rem; margin-bottom: 2.5rem; font-size: 0.95rem; }
+/* top bar: spans the whole window (cancels the body padding), its content lines up with the --page column */
+nav {
+  max-width: none;
+  margin: -1.25rem -1.25rem 2.5rem;
+  padding: 0.85rem max(1.25rem, calc((100% - var(--page)) / 2 + 1.25rem));
+  border-bottom: 1px solid var(--border);
+}
 nav a { color: var(--muted); }
 nav a.current { color: var(--text); font-weight: 600; }
 nav a { display: inline-flex; align-items: center; gap: 0.3em; }
 .nav-icon { width: 1em; height: 1em; flex: none; }
+/* wordmark: the domain is the name (jorge·rom·eu), so ".eu" is dimmed */
+nav a.brand { display: inline; margin-right: auto; color: var(--text); font: 500 0.9rem/1 "Geist Mono", ui-monospace, monospace; letter-spacing: -0.02em; }
+nav a.brand span { color: var(--muted); font-weight: 400; }
+nav a.brand:hover { text-decoration: none; }
+nav a.brand:hover span { color: var(--link); }
 
 h1 { font-size: 1.9rem; font-weight: 700; line-height: 1.2; margin: 0 0 1rem; }
 h2 { font-size: 1.25rem; font-weight: 600; margin: 2.5rem 0 0.75rem; }
@@ -233,3 +246,7 @@ body { position: relative; min-height: 100vh; box-sizing: border-box; }
 /* math (MathJax) */
 .math-display { margin: 1rem 0; overflow-x: auto; overflow-y: hidden; }
 mjx-container[display="true"] { margin: 0 !important; }
+
+/* 404 page */
+.notfound { padding-top: 3rem; }
+.notfound p { color: var(--muted); }

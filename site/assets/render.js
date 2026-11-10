@@ -1,59 +1,9 @@
-// Renders a Markdown file into the page. You shouldn't need to touch this:
-// edit home.md, projects.md and projects/*/index.md instead.
-//
-// Which file: <body data-md="home.md">, or page.html?p=projects/foo/index.md
-const file = document.body.dataset.md || new URLSearchParams(location.search).get("p");
+// Decorates the page. The HTML itself is generated from the Markdown by build.mjs; this adds
+// icons, layout and behaviour on top. You shouldn't need to touch this: edit home.md,
+// projects.md and projects/*/index.md instead.
+// (The calls are at the bottom of the file, after the lookup tables they use.)
 
-const nav = document.createElement("nav");
-nav.innerHTML = `<a href="./">About</a><a href="projects.html">Projects</a><a href="cv.pdf" target="_blank" rel="noopener"><svg class="nav-icon" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 1.5h5l3.5 3.5v9.5H4z"/><path d="M8.5 1.5V5.5h4M6 8.5h4.5M6 11h4.5"/></svg>CV</a>`;
-for (const a of nav.querySelectorAll("a")) {
-  const here = location.pathname.split("/").pop() || "./";
-  const onProjectPage = file?.startsWith("projects/");
-  if (a.getAttribute("href") === here || (onProjectPage && a.textContent === "Projects")) a.className = "current";
-}
-document.body.prepend(nav);
-
-const main = document.querySelector("main");
-fetch(file, { cache: "no-cache" }) // always check for a newer .md (cheap: 304 if unchanged)
-  .then((r) => { if (!r.ok) throw new Error(r.status); return r.text(); })
-  .then((md) => {
-    const { text, math } = protectMath(md);
-    main.innerHTML = restoreMath(marked.parse(text), math);
-    const h1 = main.querySelector("h1");
-    if (h1 && file !== "home.md") document.title = `${h1.textContent} · Jorge Romeu Huidobro`;
-    fixLinks(main);
-    contactLinks(main);
-    orgLinks(main);
-    intro(main);
-    videos(main);
-    badges(main);
-    linkRows(main);
-    if (file === "projects.md") projectList(main);   // the project-row layout is only for the Projects list
-    if (typeof startTracer === "function") startTracer();
-    if (math.length) typesetMath(main);
-  })
-  .catch(() => location.replace("404.html"));
-
-// ---- Math: $inline$ and $$display$$ (rendered with MathJax) ----
-// The math is taken out before Markdown parsing (so _ and * inside it aren't turned into
-// italics) and put back afterwards. Code spans/blocks are left alone. "$5 and $10" stays text,
-// and \$ is a literal dollar sign.
-function protectMath(md) {
-  const math = [];
-  const keep = (tex, display) => `MATHPLACEHOLDER${math.push({ tex, display }) - 1}X`;
-  const parts = md.split(/(```[\s\S]*?```|`[^`\n]*`)/);       // odd entries are code
-  const text = parts.map((part, i) => i % 2 ? part : part
-    .replace(/\$\$([\s\S]+?)\$\$/g, (_, tex) => keep(tex, true))
-    .replace(/(^|[^\\$])\$(?!\s)([^$\n]+?)(?<![\s\\])\$(?!\d)/g, (_, pre, tex) => pre + keep(tex, false))
-  ).join("");
-  return { text, math };
-}
-function restoreMath(html, math) {
-  const esc = (t) => t.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
-  return html
-    .replace(/<p>MATHPLACEHOLDER(\d+)X<\/p>/g, (m, i) => (math[i].display ? `<div class="math-display">\\[${esc(math[i].tex)}\\]</div>` : m))
-    .replace(/MATHPLACEHOLDER(\d+)X/g, (_, i) => (math[i].display ? `\\[${esc(math[i].tex)}\\]` : `\\(${esc(math[i].tex)}\\)`));
-}
+// ---- Math (rendered with MathJax; build.mjs leaves it as \( \) and \[ \]) ----
 function typesetMath(root) {
   window.MathJax = {
     tex: { inlineMath: [["\\(", "\\)"]], displayMath: [["\\[", "\\]"]] },
@@ -65,24 +15,6 @@ function typesetMath(root) {
   s.async = true;
   s.onload = () => MathJax.startup.promise.then(() => MathJax.typesetPromise([root]));
   document.head.append(s);
-}
-
-// Links to .md files open them as pages; external links get a ↗ in titles.
-// Relative paths in a Markdown file are relative to that file, so projects/foo/index.md can
-// write ![](teaser.png) for projects/foo/teaser.png. Links to .md files open through page.html.
-function fixLinks(root) {
-  const dir = file.slice(0, file.lastIndexOf("/") + 1);
-  const resolve = (path) => new URL(dir + path, "https://x/").pathname.slice(1);
-  const relative = (path) => path && !/^([a-z]+:|\/|#)/i.test(path);
-  for (const el of root.querySelectorAll("img[src], video[src], source[src]")) {
-    const src = el.getAttribute("src");
-    if (relative(src)) el.setAttribute("src", resolve(src));
-  }
-  for (const a of root.querySelectorAll("a[href]")) {
-    const href = a.getAttribute("href");
-    if (!relative(href)) continue;
-    a.setAttribute("href", href.endsWith(".md") ? `page.html?p=${resolve(href)}` : resolve(href));
-  }
 }
 
 // Links to known organisations become a coloured chip with their logo.
@@ -128,18 +60,6 @@ function intro(root) {
   if (links) card.append(links);
   wrap.append(text, card);
   if (holder.tagName === "P" && !holder.textContent.trim() && !holder.children.length) holder.remove();
-}
-
-// ![](x.mp4) becomes a looping, muted video with x.jpg as the poster.
-function videos(root) {
-  for (const img of root.querySelectorAll('img[src$=".mp4"]')) {
-    const v = document.createElement("video");
-    for (const attr of ["muted", "loop", "autoplay", "playsinline"]) v.setAttribute(attr, "");
-    v.muted = true;
-    v.src = img.getAttribute("src");
-    v.poster = v.getAttribute("src").replace(/\.mp4$/, ".jpg");
-    img.replaceWith(v);
-  }
 }
 
 // A paragraph of contact links (email/github/linkedin/scholar) gets icons and is centered.
@@ -261,7 +181,7 @@ function projectList(root) {
     for (const p of body.querySelectorAll(":scope > p:not([class])")) p.classList.add("desc");
     for (const a of body.querySelectorAll('a[href^="http"]')) { a.target = "_blank"; a.rel = "noopener"; }
     // A title linking to an in-site page (### [Title](projects/x/index.md)) makes the whole box clickable.
-    if (h3.querySelector("a")?.getAttribute("href").startsWith("page.html")) row.classList.add("has-page");
+    if (h3.querySelector("a")?.getAttribute("href").startsWith("/")) row.classList.add("has-page");
     row.append(body);
     list.append(row);
   }
@@ -278,3 +198,13 @@ function hoverPlay(row, v, canHover) {
   row.addEventListener("mouseenter", () => v.play().catch(() => {}));
   row.addEventListener("mouseleave", rest);
 }
+
+// ---- Run ----
+const main = document.querySelector("main");
+contactLinks(main);
+orgLinks(main);
+intro(main);
+badges(main);
+linkRows(main);
+if ("projectList" in document.body.dataset) projectList(main); // the project-row layout is only for the Projects list
+if ("math" in document.body.dataset) typesetMath(main);
