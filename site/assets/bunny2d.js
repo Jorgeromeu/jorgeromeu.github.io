@@ -18,8 +18,21 @@
 //        Play uses energy; a tired bunny wants rest (and throwing it then is rough).
 //        It also falls asleep when left alone, and eats carrots you drop.
 //
-// The sprites in assets/bunny-*.png are pre-rendered clay renders of the real mesh.
+// Interactions are counted as GoatCounter events (bunny-grab, bunny-carrot, ...), at most once
+// each per page view, so the dashboard shows how many visits did each thing.
+// On localhost nothing is counted, and ?debug opens a debug panel (see the bottom of this file).
+//
+// The sprite (assets/bunny.png) is a pre-rendered clay render of the real mesh; dark mode darkens it in CSS.
 (() => {
+  const dev = location.protocol === "file:" || /^(localhost|127\.0\.0\.1|\[::1\])$/.test(location.hostname);
+  const tracked = new Set();
+  function track(name, title) {
+    if (dev || tracked.has(name)) return;
+    tracked.add(name);
+    try { window.goatcounter?.count?.({ path: name, title, event: true }); } catch {}
+  }
+  const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
+
   const W = 35;                              // sprite width in px
   const G = 2400;                            // gravity, px/s^2
   const BOUNCE = 0.3;                        // vertical restitution on landing
@@ -41,10 +54,7 @@
     <div class="hare-zzz" aria-hidden="true">z</div>
     <div class="hare-hint" aria-hidden="true"></div>
     <div class="hare-body">
-      <div class="hare-sprite">
-        <img class="for-light" src="/assets/bunny-light.png" alt="" draggable="false">
-        <img class="for-dark" src="/assets/bunny-dark.png" alt="" draggable="false">
-      </div>
+      <div class="hare-sprite"><img src="/assets/bunny.png" alt="" draggable="false"></div>
     </div>`;
   document.body.append(hare);
   const body = hare.querySelector(".hare-body"), shadow = hare.querySelector(".hare-shadow");
@@ -56,7 +66,7 @@
   try { Object.assign(mind, JSON.parse(localStorage.getItem("bunny-mind")) || {}); } catch {}
   const remember = () => { try { localStorage.setItem("bunny-mind", JSON.stringify(mind)); } catch {} };
   function trust(delta) {
-    mind.trust = Math.max(-1, Math.min(1, mind.trust + delta));
+    mind.trust = clamp(mind.trust + delta, -1, 1);
     remember();
   }
   const mood = () => (mind.trust < -0.35 ? "scared" : mind.trust > 0.35 ? "friendly" : "neutral");
@@ -71,7 +81,10 @@
   // ------------------------------------------------------------------ body state
   const width = () => document.documentElement.clientWidth;
   const lo = () => 8, hi = () => width() - W - 8;
-  const clampX = (v) => Math.max(lo(), Math.min(hi(), v));
+  const clampX = (v) => clamp(v, lo(), hi());
+  const floor = () => hare.getBoundingClientRect().bottom;   // the page floor, in viewport px
+  // moving `dir` (+1 right, -1 left) would run it into the window edge
+  const cornered = (dir) => (dir > 0 && x > hi() - 20) || (dir < 0 && x < lo() + 20);
   let x = saved?.x ?? width() * 0.75;        // left edge, px
   let y = 0;                                 // height offset, <= 0 means above the floor
   let vx = 0, vy = 0;                        // px/s (vy > 0 is downward)
@@ -91,16 +104,14 @@
   const onGround = () => y >= 0 && vy === 0;
   const midX = () => x + W / 2;
 
-  // sprinting: lean forward (head down) the faster it goes
-  let leanNow = 0;
-  const lean = () => leanNow;
+  let lean = 0;                               // sprinting: leans forward (head down) the faster it goes
   function render() {
     hare.style.transform = `translateX(${x}px)`;
     const stretch = !held && y < 0 ? 1 + Math.min(0.08, Math.abs(vy) / 9000) : 1;
     body.classList.toggle("held", held);
     body.style.transform = held
       ? `translateY(${y}px) scaleX(${-facing}) rotate(${swing * -facing}rad)`
-      : `translateY(${y}px) scaleX(${-facing}) rotate(${spin * -facing + lean()}rad) scaleY(${squash * stretch})`;
+      : `translateY(${y}px) scaleX(${-facing}) rotate(${spin * -facing + lean}rad) scaleY(${squash * stretch})`;
     body.classList.toggle("tumbling", tumbling || binkyT > 0);
     if (carrot?.carried) {                   // carrying a carrot in its mouth
       const mx = facing < 0 ? x - 9 : x + W - 9;
@@ -120,7 +131,7 @@
     if (held) {
       // dangling: an underdamped spring pulled by the hand's sideways motion,
       // plus a little constant wiggle (Google Maps pegman style). Scared bunnies flail more.
-      const target = Math.max(-0.7, Math.min(0.7, -hand.vx / 1400));
+      const target = clamp(-hand.vx / 1400, -0.7, 0.7);
       const flail = terrified() ? 0.05 : mood() === "scared" || tired() ? 0.012 : mood() === "friendly" ? 0.001 : 0.004;
       swingV += ((target - swing) * 160 - swingV * 7) * dt;
       swing += swingV * dt + Math.sin(now / 90) * flail;
@@ -160,7 +171,7 @@
         vx *= Math.exp(-FRICTION * dt);                       // slide to a stop
       }
       if (sprintTarget !== null && !tumbling) sprintStep(dt);
-      leanNow += ((sprintTarget !== null ? -Math.min(0.2, Math.abs(vx) / 4800) : 0) - leanNow) * Math.min(1, dt * 10);
+      lean += ((sprintTarget !== null ? -Math.min(0.2, Math.abs(vx) / 4800) : 0) - lean) * Math.min(1, dt * 10);
       x += vx * dt;
       if (x < lo() || x > hi()) {                             // bounce off the window edge
         x = x < lo() ? lo() : hi();
@@ -195,7 +206,7 @@
     const braking = Math.sign(vx) === dir && Math.abs(dist) <= stopDist + 4;
     const want = braking ? 0 : dir * SPRINT_MAX;
     const rate = braking ? SPRINT_BRAKE : SPRINT_ACCEL;
-    vx += Math.max(-rate * dt, Math.min(rate * dt, want - vx));
+    vx += clamp(want - vx, -rate * dt, rate * dt);
     if (Math.abs(vx) > 30) facing = Math.sign(vx);
     if (Math.abs(dist) < 10 && Math.abs(vx) < 200) { sprintTarget = null; vx = 0; }   // arrived: stop right there
   }
@@ -212,7 +223,8 @@
 
   // a small hop that covers about `dist` px
   const hopToward = (dist) => hop(Math.sign(dist) * Math.min(260, 60 + Math.abs(dist) * 2.2), 200);
-  const clamp90 = (d) => Math.max(-90, Math.min(90, d));
+  // hop toward the cursor, stopping `gap` px short of it (at most `max` px per hop)
+  const hopNextTo = (dist, gap, max = 90) => hopToward(clamp(dist - Math.sign(dist) * gap, -max, max));
   // a jump that lands `dist` px away (ballistic: flight time = 2 * up / G)
   const leapBy = (dist, up) => hop(dist / ((2 * up) / G), up);
 
@@ -221,18 +233,23 @@
     body.classList.remove("wiggle"); void body.offsetWidth; body.classList.add("wiggle");
     setTimeout(() => body.classList.remove("wiggle"), 600);
   }
+  function crouch(depth, ms, then) {         // squat down to `depth` for `ms`, then get up (and do `then`)
+    crouching = true; squash = depth; render();
+    setTimeout(() => { crouching = false; squash = 1; render(); then?.(); }, ms);
+  }
   function happy() {                         // little bounce, then hop back toward you
     hop(0, 220);
     setTimeout(() => {
       wiggle();
       const d = cursor.x - midX();
-      if (cursor.t && Math.abs(d) > 50) hopToward(clamp90(d - Math.sign(d) * 30));
+      if (cursor.t && Math.abs(d) > 50) hopNextTo(d, 30);
     }, 380);
   }
   // A binky is an excited happy-rabbit leap. Each one is a random variant:
   // a backflip, a frontflip, a mid-air twist, or a double hop.
   function binky() {
     if (!onGround() || held) return;
+    track("bunny-binky", "Bunny: did a happy binky");
     const r = Math.random();
     binkyKind = r < 0.3 ? "back" : r < 0.6 ? "front" : r < 0.8 ? "twist" : "double";
     const f = facing;
@@ -278,8 +295,7 @@
   function sulk(tries = 0) {                 // fell short: a little disappointed slump
     if (held) return;
     if (!onGround() || running) { if (tries < 20) setTimeout(() => sulk(tries + 1), 80); return; }   // wait until it's down
-    crouching = true; squash = 0.86; render();
-    setTimeout(() => { crouching = false; squash = 1; render(); }, 900);
+    crouch(0.86, 900);
   }
   function nudge(dist) {                     // bump into a cursor that's been sitting still
     const dir = Math.sign(dist) || -facing;
@@ -288,20 +304,13 @@
     setTimeout(wiggle, 260);
   }
   function plop() {                          // after zoomies: flop down, out of breath
-    crouching = true; squash = 0.72; render();
     tire(0.3);
-    setTimeout(() => { crouching = false; squash = 1; render(); }, 1600);
+    crouch(0.72, 1600);
   }
   function pounce(dist) {                    // crouch... then jump onto the cursor
-    crouching = true;
     facing = Math.sign(dist) || facing;
-    squash = 0.72; render();
-    setTimeout(() => {
-      crouching = false; squash = 1;
-      const up = 440;
-      leapBy(dist, up);
-      setTimeout(wiggle, (2 * up / G) * 1000 + 120);
-    }, 300);
+    const up = 440;
+    crouch(0.72, 300, () => { leapBy(dist, up); setTimeout(wiggle, (2 * up / G) * 1000 + 120); });
   }
 
   // ------------------------------------------------------------------ sleeping
@@ -322,8 +331,8 @@
     if (held || (!force && now < cooldownUntil) || !onGround()) return;
     const [bx] = center();
     let dir = cx < bx ? 1 : -1;
-    const cornered = (dir > 0 && x > hi() - 20) || (dir < 0 && x < lo() + 20);
-    if (cornered && mood() === "scared") {
+    const stuck = cornered(dir);
+    if (stuck && mood() === "scared") {
       // cornered and terrified: big leap over/past the cursor, then run for the other corner
       hideSide = -dir;
       leapBy(-dir * (220 + Math.random() * 80), 520);
@@ -332,7 +341,7 @@
       trust(-0.006);
       return;
     }
-    if (cornered) dir = -dir;                                         // dodge past
+    if (stuck) dir = -dir;                                            // dodge past
     const panic = mood() === "scared" ? 1.35 : 1;
     hop(dir * (170 + Math.random() * 90) * panic, (300 + Math.random() * 120) * Math.sqrt(panic));
     cooldownUntil = now + (mood() === "scared" ? 60 : 120);
@@ -403,7 +412,7 @@
     if (!over) return false;
     pet.amount = pet.amount * Math.exp(-(now - pet.last) / 700) + stroke;
     pet.last = now;
-    if (pet.amount > 25 && !pet.purring) { pet.purring = true; body.classList.add("purr"); purr(); }
+    if (pet.amount > 25 && !pet.purring) { pet.purring = true; body.classList.add("purr"); purr(); track("bunny-pet", "Bunny: petted until it purred"); }
     return true;
   }
   function purr() {
@@ -432,8 +441,7 @@
     if (terrified() && onGround() && Math.random() < 0.9) {         // squirms out of your grasp
       const [bx] = center();
       const dir = e.clientX < bx ? 1 : -1;
-      const cornered = (dir > 0 && x > hi() - 20) || (dir < 0 && x < lo() + 20);
-      leapBy((cornered ? -dir : dir) * (240 + Math.random() * 80), 480);
+      leapBy((cornered(dir) ? -dir : dir) * (240 + Math.random() * 80), 480);
       trust(-0.01);
       return;
     }
@@ -454,28 +462,34 @@
       release();
     }, 350 + Math.random() * 250);
     play.grabs++; maybeHint();
+    track("bunny-grab", "Bunny: picked up");
     grabTimes = grabTimes.filter((t) => performance.now() - t < 8000).concat(performance.now());
     if (grabTimes.length >= 4 && !playful()) trust(-0.04);           // grabbing it over and over
     else if (tired()) trust(-0.02);
   });
+  // shared by the bunny and the carrot: where the pointer is and how fast it's moving (smoothed)
+  function moveHand(h, e) {
+    const now = performance.now(), dt = Math.max(1, now - h.t) / 1000;
+    h.vx = 0.5 * h.vx + 0.5 * (e.clientX - h.x) / dt;
+    h.vy = 0.5 * h.vy + 0.5 * (e.clientY - h.y) / dt;
+    Object.assign(h, { x: e.clientX, y: e.clientY, t: now });
+  }
+  function letGo(h) {                        // the hand's velocity on release; if it had stopped, a plain drop
+    if (performance.now() - h.t > 80) h.vx = h.vy = 0;
+  }
   function follow(e) {
-    const now = performance.now(), dt = Math.max(1, now - hand.t) / 1000;
-    hand.vx = 0.5 * hand.vx + 0.5 * (e.clientX - hand.x) / dt;
-    hand.vy = 0.5 * hand.vy + 0.5 * (e.clientY - hand.y) / dt;
-    Object.assign(hand, { x: e.clientX, y: e.clientY, t: now });
-    const floor = hare.getBoundingClientRect().bottom;                    // the page floor, in viewport px
+    moveHand(hand, e);
     x = clampX(e.clientX - hand.ox);
-    y = Math.min(0, e.clientY - hand.oy + body.offsetHeight - floor);     // body bottom follows the hand
+    y = Math.min(0, e.clientY - hand.oy + body.offsetHeight - floor());   // body bottom follows the hand
     if (Math.abs(hand.vx) > 30) facing = Math.sign(hand.vx);
   }
   body.addEventListener("pointermove", (e) => { if (held) follow(e); });
   function release() {
     if (!held) return;
     held = false;
-    // keep the hand's velocity (capped) -> drop or throw. If the hand had stopped, it's a plain drop.
-    if (performance.now() - hand.t > 80) hand.vx = hand.vy = 0;
-    vx = Math.max(-1600, Math.min(1600, hand.vx));
-    vy = Math.max(-1400, Math.min(1400, hand.vy));
+    letGo(hand);                             // keep the hand's velocity (capped) -> drop or throw
+    vx = clamp(hand.vx, -1600, 1600);
+    vy = clamp(hand.vy, -1400, 1400);
     if (y >= 0 && vy >= 0) vy = 0;
     // in the air it tumbles: the harder the throw, the faster it spins
     const fling = Math.hypot(vx, vy);
@@ -488,6 +502,7 @@
     const rough = speed > Math.min(1450, 1050 * tol) || height > 320 * tol || (tired() && (speed > 400 || height > 120));
     const toss = speed > 250 || height > 50;
     comeBack = false;
+    if (toss) track("bunny-throw", "Bunny: thrown");
     if (rough) { trust(-0.12); scurry = mood() === "scared" ? 3 : 2; }
     else if (playful() && toss) { trust(0.02); tire(0.12); scurry = 0; comeBack = true; }   // "wheee"
     else scurry = mood() === "scared" ? 3 : mood() === "friendly" ? 0 : toss ? 1 : 0;
@@ -518,16 +533,17 @@
     <path d="M7 14 L9.5 15 M9.5 11.5 L12 12.5 M5 17.5 L7 18.3" stroke="rgba(0,0,0,0.12)" stroke-width="0.9" stroke-linecap="round"/>
     <defs><linearGradient id="cg" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#e8a76b"/><stop offset="1" stop-color="#c97a43"/></linearGradient></defs>
   </svg>`;
+  const clampCarrot = (v) => clamp(v, 8, width() - 26);
   function dropCarrot(cx, cy) {
     if (carrot || still) return;
     const el = document.createElement("div");
     el.className = "carrot";
     el.innerHTML = CARROT_SVG;
     document.body.append(el);
-    const floor = hare.getBoundingClientRect().bottom;
-    carrot = { el, x: Math.max(8, Math.min(width() - 26, cx - 9)), y: Math.min(0, cy - floor), vy: 0, bites: 0, landed: false, held: false, carried: false, thrown: false };
+    carrot = { el, x: clampCarrot(cx - 9), y: Math.min(0, cy - floor()), vy: 0, bites: 0, landed: false, held: false, carried: false, thrown: false };
     fetches = 0;
     grabbable(carrot);
+    track("bunny-carrot", "Bunny: carrot dropped");
     fall(carrot);
   }
   function fall(c, vx0 = 0, vy0 = 0) {
@@ -542,7 +558,7 @@
         if (c.y >= 0) { c.y = 0; c.vy = c.vy > 200 ? -c.vy * 0.25 : 0; rot = 0; }
       } else c.vx *= Math.exp(-6 * dt);                               // slides to a stop
       c.x += c.vx * dt;
-      if (c.x < 8 || c.x > width() - 26) { c.x = Math.max(8, Math.min(width() - 26, c.x)); c.vx = -c.vx * 0.4; }
+      if (c.x !== clampCarrot(c.x)) { c.x = clampCarrot(c.x); c.vx = -c.vx * 0.4; }
       c.el.style.transform = `translate(${c.x}px, ${c.y}px) rotate(${rot}deg)`;
       if (c.y < 0 || c.vy !== 0 || Math.abs(c.vx) > 5) requestAnimationFrame(step);
       else { c.landed = true; c.vx = 0; c.el.style.transform = `translate(${c.x}px, 0)`; bother(); }
@@ -550,34 +566,30 @@
   }
   // you can pick a carrot up and put it somewhere else (snatching it mid-meal is a bit mean)
   function grabbable(c) {
-    let ox = 0, oy = 0, hx = 0, hy = 0, ht = 0, hvx = 0, hvy = 0;
+    const h = { x: 0, y: 0, t: 0, vx: 0, vy: 0, ox: 0, oy: 0 };
     c.el.addEventListener("pointerdown", (e) => {
       e.preventDefault();
       c.el.setPointerCapture(e.pointerId);
       if (eating) { eating = false; trust(-0.02); }
       c.held = true; c.landed = false; c.carried = false;
       c.el.classList.add("held");
-      hx = e.clientX; hy = e.clientY; ht = performance.now(); hvx = hvy = 0;
       const r = c.el.getBoundingClientRect();
-      ox = e.clientX - r.left; oy = e.clientY - r.top;
+      Object.assign(h, { x: e.clientX, y: e.clientY, t: performance.now(), vx: 0, vy: 0, ox: e.clientX - r.left, oy: e.clientY - r.top });
     });
     c.el.addEventListener("pointermove", (e) => {
       if (!c.held) return;
-      const now = performance.now(), dt = Math.max(1, now - ht) / 1000;
-      hvx = 0.5 * hvx + 0.5 * (e.clientX - hx) / dt; hvy = 0.5 * hvy + 0.5 * (e.clientY - hy) / dt;
-      hx = e.clientX; hy = e.clientY; ht = now;
-      const floor = hare.getBoundingClientRect().bottom;
-      c.x = Math.max(8, Math.min(width() - 26, e.clientX - ox));
-      c.y = Math.min(0, e.clientY - oy + c.el.offsetHeight - floor);
+      moveHand(h, e);
+      c.x = clampCarrot(e.clientX - h.ox);
+      c.y = Math.min(0, e.clientY - h.oy + c.el.offsetHeight - floor());
       c.el.style.transform = `translate(${c.x}px, ${c.y}px) rotate(-15deg)`;
     });
     const drop = () => {
       if (!c.held) return;
       c.held = false; c.el.classList.remove("held");
-      if (performance.now() - ht > 80) hvx = hvy = 0;                  // hand had stopped: plain drop
-      const vx0 = Math.max(-1400, Math.min(1400, hvx)), vy0 = Math.max(-1200, Math.min(1200, hvy));
+      letGo(h);
+      const vx0 = clamp(h.vx, -1400, 1400), vy0 = clamp(h.vy, -1200, 1200);
       c.thrown = Math.hypot(vx0, vy0) > 350;                           // a throw -> a playful bunny fetches it
-      fetchTo = hx;
+      fetchTo = h.x;
       fall(c, vx0, vy0);
     };
     c.el.addEventListener("pointerup", drop);
@@ -591,8 +603,7 @@
   });
   if (touch) addEventListener("pointerdown", (e) => {
     if (!mind.hinted || body.contains(e.target)) return;
-    const floor = hare.getBoundingClientRect().bottom;
-    if (floor - e.clientY < 90 && !e.target.closest("a, button")) dropCarrot(e.clientX, e.clientY - 120);
+    if (floor() - e.clientY < 90 && !e.target.closest("a, button")) dropCarrot(e.clientX, e.clientY - 120);
   });
 
   function eatStep() {
@@ -614,7 +625,8 @@
     if (running && mood() !== "scared") return;                      // scared bunnies don't wait to stop sliding
     const now = performance.now(), m = mood();
     const [bx] = center();
-    const cursorNear = Math.abs(cursor.x - bx) < 450 && hare.getBoundingClientRect().bottom - cursor.y < 260;
+    const above = floor() - cursor.y;                                  // how high the cursor is over the floor
+    const cursorNear = Math.abs(cursor.x - bx) < 450 && above < 260;
 
     // 1) food (or fetch, if it's playful and you threw the carrot)
     if (carrot?.carried) {                                             // bring it back to you
@@ -638,9 +650,9 @@
         facing = Math.sign(dist) || facing;
         if (fetchIt) { carrot.carried = true; carrot.landed = false; render(); return; }   // pick it up
         render();
-        eating = true; eatStep();
+        eating = true; eatStep(); track("bunny-eat", "Bunny: ate a carrot");
       } else if (fetchIt) { if (sprintTarget === null) sprintTo(carrot.x + 9 - W / 2); }
-      else hopToward(Math.max(-90, Math.min(90, dist)));
+      else hopToward(clamp(dist, -90, 90));
       return;
     }
 
@@ -677,14 +689,14 @@
     }
     if (zoomed) { zoomed = false; return plop(); }
     if (playful() && energy > 0.6 && now - cursor.t > 2500 && Math.random() < 0.012) {
-      zoomies = 3 + Math.floor(Math.random() * 2); zoomed = true;
+      zoomies = 3 + Math.floor(Math.random() * 2); zoomed = true; track("bunny-zoomies", "Bunny: got the zoomies");
       return;
     }
 
     // 5) playful: play with the cursor when it's down near the floor
     if (playful() && cursor.t && now > playCooldown) {
       const dist = cursor.x - midX();
-      const low = hare.getBoundingClientRect().bottom - cursor.y < 160;
+      const low = above < 160;
       const restingFor = now - cursor.t;
       if (low && restingFor > 4000 && Math.abs(dist) <= 60 && now > nudgeAt) {
         nudgeAt = now + 1800;                                          // nudge it: "play with me"
@@ -692,10 +704,10 @@
       }
       if (low && restingFor < 300 && cursor.speed < 1.5 && Math.abs(dist) > 60 && Math.abs(dist) < 500) {
         tire(0.01);                                                    // follow it along the floor
-        return hopToward(clamp90(dist - Math.sign(dist) * 30));
+        return hopNextTo(dist, 30);
       }
       // cursor up in the air (not too high): leap up and try to catch it
-      const h = hare.getBoundingClientRect().bottom - cursor.y - 17;
+      const h = above - 17;
       if (!low && restingFor > 600 && restingFor < 5000 && Math.abs(dist) < 360) {
         if (h > WONT_TRY) {                                          // way out of reach: just look up at it
           facing = Math.sign(dist) || facing; render();
@@ -721,8 +733,8 @@
     // 6) friendly: come and sit next to a cursor that's resting near the floor, then nudge it
     if (m === "friendly" && cursor.t && now - cursor.t > 1200 && cursorNear) {
       const dist = cursor.x - midX();
-      if (Math.abs(dist) > 45) return hopToward(Math.max(-80, Math.min(80, dist - Math.sign(dist) * 35)));
-      const low = hare.getBoundingClientRect().bottom - cursor.y < 120;
+      if (Math.abs(dist) > 45) return hopNextTo(dist, 35, 80);
+      const low = above < 120;
       if (low && now - cursor.t > 4000 && now > nudgeAt) { nudgeAt = now + 2200; return nudge(dist); }
       facing = Math.sign(dist) || facing; render();                     // look at it
       return;
@@ -740,11 +752,13 @@
   setInterval(() => { if (performance.now() - lastBother > 20000 && mind.trust < 0.2) trust(0.02); }, 30000);
 
   // ------------------------------------------------------------------ debug panel
-  // Open any page with ?debug (stays on while you browse in that tab; ?debug=0 turns it off).
+  // Local dev only: open any page with ?debug (stays on while you browse in that tab; ?debug=0 turns it off).
   const q = new URLSearchParams(location.search).get("debug");
-  try { if (q !== null) sessionStorage.setItem("bunny-debug", q === "0" ? "" : "1"); } catch {}
   let debugOn = false;
-  try { debugOn = !!sessionStorage.getItem("bunny-debug"); } catch {}
+  try {
+    if (dev && q !== null) sessionStorage.setItem("bunny-debug", q === "0" ? "" : "1");
+    debugOn = dev && !!sessionStorage.getItem("bunny-debug");
+  } catch {}
   if (debugOn) {
     const panel = document.createElement("div");
     panel.className = "bunny-debug";
@@ -769,7 +783,7 @@
       if (a === "neutral") setTrust(0);
       if (a === "friendly") setTrust(0.45);
       if (a === "playful") { setTrust(0.85); energy = 1; }
-      if (a === "carrot") dropCarrot(midX() + (Math.random() < 0.5 ? -200 : 200), hare.getBoundingClientRect().bottom - 300);
+      if (a === "carrot") dropCarrot(midX() + (Math.random() < 0.5 ? -200 : 200), floor() - 300);
       if (a === "sleep") setAsleep(true);
       if (a === "binky") binky();
       if (a === "zoomies") { zoomies = 4; zoomed = true; }
@@ -785,7 +799,10 @@
     }, 200);
   }
 
-  addEventListener("resize", () => { x = clampX(x); render(); });
+  addEventListener("resize", () => {
+    x = clampX(x); render();
+    if (carrot && !carrot.carried) { carrot.x = clampCarrot(carrot.x); carrot.el.style.transform = `translate(${carrot.x}px, ${carrot.y}px)`; }
+  });
   x = clampX(x);
   render();
 })();

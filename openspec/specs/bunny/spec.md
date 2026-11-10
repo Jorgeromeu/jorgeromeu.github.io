@@ -5,7 +5,7 @@
 A small Stanford bunny lives on the floor of every page as a hidden easter egg. It has simple
 physics and a persistent personality: rough handling makes it scared, carrots and gentle play
 make it trusting, and a trusting bunny plays with the cursor. Implemented in `site/assets/bunny2d.js`
-(styles at the end of `site/assets/style.css`, sprites in `site/assets/bunny-*.png`).
+(styles at the end of `site/assets/style.css`, sprite in `site/assets/bunny.png`).
 
 ## Requirements
 
@@ -23,13 +23,13 @@ same browser tab.
 - **THEN** the bunny appears at the same horizontal position it had on the previous page
 
 ### Requirement: Appearance
-The bunny SHALL be drawn from pre-rendered clay sprites of the real Stanford bunny mesh, one per
-theme (light and dark), with a soft contact shadow under its feet. The shadow SHALL shrink and fade
+The bunny SHALL be drawn from a pre-rendered clay sprite of the real Stanford bunny mesh, darkened
+in dark mode, with a soft contact shadow under its feet. The shadow SHALL shrink and fade
 as the bunny rises.
 
 #### Scenario: Theme switch
 - **WHEN** the visitor switches between light and dark mode
-- **THEN** the bunny shows the sprite for that theme
+- **THEN** the bunny is shown lighter or darker to match
 
 ### Requirement: Physics
 The bunny SHALL move with simple physics: gravity, a squash on landing proportional to impact, a

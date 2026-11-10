@@ -16,6 +16,7 @@
   --shadow-hover: 0 4px 14px rgba(0, 0, 0, 0.08);
   --allsides: #5c14c4;
   --tudelft: #0077a8;
+  --scroll: #d6d2c9;
 }
 :root[data-theme="dark"] {
   --bg: #161615;
@@ -34,8 +35,17 @@
   --shadow-hover: 0 4px 14px rgba(0, 0, 0, 0.4);
   --allsides: #b48cf5;
   --tudelft: #4cc4ec;
+  --scroll: #3b3a36;
 }
 html { background: var(--bg); transition: background 0.3s; }
+
+/* Scrollbar: just a thin rounded thumb, no track or arrows, in the page's colors */
+html { scrollbar-width: thin; scrollbar-color: var(--scroll) transparent; }
+@supports not (scrollbar-color: auto) {   /* Safari */
+  ::-webkit-scrollbar { width: 10px; height: 10px; background: transparent; }
+  ::-webkit-scrollbar-thumb { background: var(--scroll); border-radius: 10px; border: 3px solid var(--bg); }
+  ::-webkit-scrollbar-thumb:hover { background: var(--muted); }
+}
 
 
 .theme-toggle {
@@ -192,8 +202,7 @@ body { position: relative; min-height: 100vh; box-sizing: border-box; }
   background: radial-gradient(50% 100% at 50% 100%, rgba(0, 0, 0, 0.2), transparent);
 }
 :root[data-theme="dark"] .hare-shadow { background: radial-gradient(50% 100% at 50% 100%, rgba(0, 0, 0, 0.7), transparent); }
-.for-dark, :root[data-theme="dark"] .for-light { display: none !important; }
-:root[data-theme="dark"] .for-dark { display: block !important; }
+:root[data-theme="dark"] .hare-body img { filter: brightness(0.646); }   /* same clay render, darker */
 
 /* bunny brain extras (bunny2d.js) */
 .hare-sprite { width: 100%; }
