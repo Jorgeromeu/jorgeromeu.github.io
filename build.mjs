@@ -22,7 +22,9 @@ const SITE = {
   goatcounter: "jorgeromeu",
   // Structured data for the home page: helps search engines connect the name to this site and profiles.
   person: {
+    alternateName: ["Jorge Romeu"],
     jobTitle: "Research Engineer",
+    knowsAbout: ["Inverse rendering", "3D reconstruction", "Physically based rendering", "Computer graphics", "Generative models"],
     worksFor: { name: "ALLSIDES", url: "https://www.allsides.tech/" },
     alumniOf: { name: "Delft University of Technology", url: "https://www.tudelft.nl/" },
     sameAs: [
@@ -95,6 +97,9 @@ function render(page) {
 ${page.noindex ? '  <meta name="robots" content="noindex">' : `  <link rel="canonical" href="${canonical}">
   <meta property="og:type" content="${page.home ? "profile" : "article"}">
   <meta property="og:site_name" content="${SITE.name}">
+${page.home ? `  <meta property="profile:first_name" content="Jorge">
+  <meta property="profile:last_name" content="Romeu Huidobro">
+` : ""}
   <meta property="og:title" content="${esc(page.home ? SITE.name : h1)}">
   <meta property="og:description" content="${esc(description)}">
   <meta property="og:url" content="${canonical}">
@@ -123,17 +128,28 @@ ${SITE.goatcounter ? `  <script data-goatcounter="https://${SITE.goatcounter}.go
 
 function personJsonLd() {
   const { person: p } = SITE;
-  return JSON.stringify({
-    "@context": "https://schema.org",
+  const person = {
     "@type": "Person",
+    "@id": SITE.url + "/#person",
     name: SITE.name,
+    alternateName: p.alternateName,
     url: SITE.url + "/",
     image: SITE.url + SITE.image,
     description: SITE.description,
     jobTitle: p.jobTitle,
     worksFor: { "@type": "Organization", ...p.worksFor },
     alumniOf: { "@type": "CollegeOrUniversity", ...p.alumniOf },
+    knowsAbout: p.knowsAbout,
     sameAs: p.sameAs,
+  };
+  return JSON.stringify({
+    "@context": "https://schema.org",
+    "@graph": [
+      // Tells Google the site's name is your name (shown above the result).
+      { "@type": "WebSite", "@id": SITE.url + "/#website", name: SITE.name, url: SITE.url + "/" },
+      // Marks the home page as your profile page, about you.
+      { "@type": "ProfilePage", url: SITE.url + "/", name: SITE.name, mainEntity: person },
+    ],
   }).replace(/</g, "\\u003c");
 }
 

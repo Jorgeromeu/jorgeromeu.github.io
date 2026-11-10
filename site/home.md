@@ -1,6 +1,6 @@
 # Jorge Romeu Huidobro
 
-<img class="avatar" src="me.jpg" alt="Photo of me">
+<img class="avatar" src="me.jpg" alt="Jorge Romeu Huidobro">
 
 I am a Research Engineer at [ALLSIDES](https://www.allsides.tech/) working on 3D reconstruction and inverse rendering for e-commerce and synthetic-data generation applications.
 
