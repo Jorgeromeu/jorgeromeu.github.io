@@ -1,0 +1,10 @@
+{
+  "name": "jorgeromeu.github.io",
+  "private": true,
+  "scripts": {
+    "dev": "browser-sync start --server site --files \"site/**/*\" --no-notify --no-ui --no-open --port 8000"
+  },
+  "devDependencies": {
+    "browser-sync": "^3.0.4"
+  }
+}

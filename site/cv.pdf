@@ -1,0 +1,37 @@
+#import "lib.typ": *
+#import "data.typ": *
+
+#show: cv.with(
+  personal,
+  headline: auto,
+  photo: true,
+  photo-size: 2.7cm,
+  photo-radius: 50%,
+  header-style: "plain",
+  summary: profile,
+  header-padding: 1.5cm,
+  name-size: 19pt,
+  headline-size: 11.5pt,
+  headline-break: false,
+  contact-gap: 1em,
+  icon-gap: 0.5em,
+  font: "Inter",
+  leading: 0.65em,
+  entry-gap: 1.35em,
+  section-gap: 1.9em,
+)
+
+#org-format(logo: true, color: true)
+
+= Experience
+#entries(experience)
+
+= Education
+#entries(education, duration: false)
+
+= Skills
+#skill-list(skills)
+
+= Publications
+#publication-list((pub-teleop))
+

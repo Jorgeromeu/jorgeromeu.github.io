@@ -1,1 +1,18 @@
-public
+# Dependencies (npm install)
+node_modules/
+
+# Old Hugo build output
+public/
+
+# OS / editor junk
+.DS_Store
+Thumbs.db
+*:Zone.Identifier
+*.swp
+*~
+.vscode/
+.idea/
+
+# Logs
+npm-debug.log*
+*.log
