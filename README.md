@@ -5,7 +5,7 @@ Personal site. `build.mjs` turns the Markdown in `site/` into plain HTML pages i
 
 ## Editing
 
-Everything you edit is in `site/`. The site's code lives in `site/assets/` and can be ignored.
+Everything you edit is in `site/`. The code (`build.mjs`, `layout.mjs`, `site/assets/`) can be ignored.
 
     site/
       home.md                  Home / about           -> /

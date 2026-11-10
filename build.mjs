@@ -11,6 +11,7 @@
 import { cpSync, existsSync, mkdirSync, readFileSync, readdirSync, rmSync, writeFileSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { marked } from "marked";
+import { layout } from "./layout.mjs";
 
 const SITE = {
   url: "https://jorgerom.eu",
@@ -76,6 +77,7 @@ function render(page) {
   let html = restoreMath(marked.parse(text), math);
   html = fixLinks(html, dir);
   html = videos(html);
+  html = layout(html, { projectList: page.projectList });
 
   const h1 = strip(html.match(/<h1[^>]*>([\s\S]*?)<\/h1>/)?.[1] || "");
   const title = page.home ? SITE.name : `${h1} · ${SITE.name}`;

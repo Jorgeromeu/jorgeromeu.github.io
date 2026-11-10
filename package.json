@@ -7,6 +7,7 @@
   },
   "devDependencies": {
     "browser-sync": "^3.0.4",
+    "jsdom": "^29.1.1",
     "marked": "^12.0.2"
   }
 }
